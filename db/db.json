@@ -1,0 +1,73 @@
+{
+"units": [
+  {
+    "id": 1,
+    "type": "Length",
+    "label": "Meter",
+    "symbol": "m"
+  },
+  {
+    "id": 2,
+    "type": "Length",
+    "label": "Kilometer",
+    "symbol": "km"
+  },
+  {
+    "id": 3,
+    "type": "Length",
+    "label": "Centimeter",
+    "symbol": "cm"
+  },
+  {
+    "id": 4,
+    "type": "Weight",
+    "label": "Kilogram",
+    "symbol": "kg"
+  },
+  {
+    "id": 5,
+    "type": "Weight",
+    "label": "Gram",
+    "symbol": "g"
+  },
+  {
+    "id": 6,
+    "type": "Temperature",
+    "label": "Celsius",
+    "symbol": "C"
+  },
+  {
+    "id": 7,
+    "type": "Temperature",
+    "label": "Fahrenheit",
+    "symbol": "F"
+  }
+  ,
+  {
+    "id": 8,
+    "type": "Volume",
+    "label": "Liter",
+    "symbol": "L"
+  },
+  {
+    "id": 9,
+    "type": "Volume",
+    "label": "Milliliter",
+    "symbol": "mL"
+  }
+
+],
+  
+  "conversions": [
+    { "id": 1, "from": "km", "to": "m", "factor": 1000, "formula": null },
+    { "id": 2, "from": "m", "to": "cm", "factor": 100, "formula": null },
+
+    { "id": 3, "from": "kg", "to": "g", "factor": 1000, "formula": null },
+
+    { "id": 4, "from": "C", "to": "F", "factor": null, "formula": "(x * 9/5) + 32" },
+    { "id": 5, "from": "F", "to": "C", "factor": null, "formula": "(x - 32) * 5/9" },
+
+    { "id": 6, "from": "L", "to": "mL", "factor": 1000, "formula": null }
+  ],
+  "history": []
+}
