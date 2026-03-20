@@ -179,6 +179,39 @@ async function saveHistory(record) {
         return null;
     }
 }
+// UC7: Apply conversion using factor or formula
+function applyConversion(value, conversion) {
 
+    // Validate number
+    if (isNaN(value)) {
+        throw new Error("Invalid number");
+    }
+
+    // Same unit case (safety check)
+    if (!conversion || (conversion.factor === 1 && conversion.formula === null)) {
+        return parseFloat(value.toFixed(6));
+    }
+
+    // Factor-based conversion
+    if (conversion.factor !== null) {
+        const result = value * conversion.factor;
+        return parseFloat(result.toFixed(6));
+    }
+
+    // Formula-based conversion (Temperature)
+    if (conversion.formula !== null) {
+        // Replace x with actual value
+        const expression = conversion.formula.replace("x", value);
+
+        try {
+            const result = eval(expression);
+            return parseFloat(result.toFixed(6));
+        } catch (err) {
+            throw new Error("Invalid conversion formula");
+        }
+    }
+
+    throw new Error("Unsupported conversion type");
+}
 
 });
