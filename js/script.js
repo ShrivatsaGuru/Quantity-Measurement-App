@@ -355,4 +355,15 @@ function showResult(value, unitSymbol) {
         unitEl.classList.remove("highlight");
     }, 1500);
 }
+// UC13: Show or hide operator row
+function toggleOperators(show) {
+    const operatorRow = document.querySelector("#operators");
+
+    if (!operatorRow) {
+        console.warn("Operator row not found");
+        return;
+    }
+
+    operatorRow.style.display = show ? "flex" : "none";
+}
 });
