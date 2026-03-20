@@ -58,26 +58,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     async function loadUnits(type) {
-        const res = await fetch("http://localhost:3000/units");
-        const units = await res.json();
-
-        const filtered = units.filter(u => 
-            u.type.toLowerCase() === type.toLowerCase()
+    try {
+        const res = await fetch(
+            `http://localhost:3000/units?type=${type}`
         );
 
-        const selects = document.querySelectorAll("select");
+        if (!res.ok) {
+            throw new Error("Failed to fetch units");
+        }
 
-        selects.forEach(select => {
-            select.innerHTML = "";
+        const units = await res.json();
 
-            filtered.forEach(unit => {
-                const option = document.createElement("option");
-                option.value = unit.symbol;
-                option.textContent = unit.label;
-                select.appendChild(option);
-            });
-        });
+        const fromSelect = document.querySelector("#from-unit");
+        const toSelect = document.querySelector("#to-unit");
+
+        populateDropdown(fromSelect, units);
+        populateDropdown(toSelect, units);
+
+    } catch (error) {
+        console.error(error);
+        showError("Unable to load units");
     }
+}
 
     // UC6: Load history records (newest first)
 async function loadHistory() {
@@ -267,5 +269,32 @@ function performArithmetic(v1, v2Normalized, operator) {
 
     // Round to 6 decimal places
     return parseFloat(result.toFixed(6));
+}
+// UC10: Populate unit dropdown
+function populateDropdown(selectEl, units) {
+
+    // Safety check
+    if (!selectEl) {
+        console.warn("Dropdown element not found");
+        return;
+    }
+
+    // Clear existing options
+    selectEl.innerHTML = "";
+
+    // Default disabled option
+    const defaultOption = document.createElement("option");
+    defaultOption.textContent = "-- Select Unit --";
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    selectEl.appendChild(defaultOption);
+
+    // Add unit options
+    units.forEach(unit => {
+        const option = document.createElement("option");
+        option.value = unit.symbol;
+        option.textContent = `${unit.label} (${unit.symbol})`;
+        selectEl.appendChild(option);
+    });
 }
 });
