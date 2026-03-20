@@ -91,5 +91,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     function showError(message) {
         alert(message);
     }
+    // UC4: Fetch conversion record for a unit pair
+async function getConversion(from, to) {
+    try {
+        // Same unit: no conversion needed
+        if (from === to) {
+            return {
+                from,
+                to,
+                factor: 1,
+                formula: null
+            };
+        }
+
+        const res = await fetch(
+            `http://localhost:3000/conversions?from=${from}&to=${to}`
+        );
+
+        if (!res.ok) {
+            throw new Error(`HTTP Error: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // json-server returns an array
+        if (!data.length) {
+            throw new Error("Conversion not available for this unit pair");
+        }
+
+        return data[0];
+    } catch (error) {
+        console.error("Conversion fetch failed:", error);
+        throw error; // let caller handle UI message
+    }
+}
 
 });
