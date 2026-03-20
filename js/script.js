@@ -231,4 +231,41 @@ function compareValues(v1, u1, v2, u2, base1, base2) {
 
     return `${v1} ${u1} is EQUAL to ${v2} ${u2}`;
 }
+// UC9: Perform arithmetic operation between two values
+function performArithmetic(v1, v2Normalized, operator) {
+
+    // Validate numbers
+    if (isNaN(v1) || isNaN(v2Normalized)) {
+        throw new Error("Invalid values for arithmetic");
+    }
+
+    let result;
+
+    switch (operator) {
+        case "+":
+            result = v1 + v2Normalized;
+            break;
+
+        case "-":
+            result = v1 - v2Normalized;
+            break;
+
+        case "*":
+            result = v1 * v2Normalized;
+            break;
+
+        case "/":
+            if (v2Normalized === 0) {
+                throw new Error("Cannot divide by zero");
+            }
+            result = v1 / v2Normalized;
+            break;
+
+        default:
+            throw new Error("Unknown operator");
+    }
+
+    // Round to 6 decimal places
+    return parseFloat(result.toFixed(6));
+}
 });
