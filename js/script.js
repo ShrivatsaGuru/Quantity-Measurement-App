@@ -25,34 +25,59 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadHistory();
 
     function attachEventListeners() {
-        const typeCards = document.querySelectorAll("#types .card");
-        const actionButtons = document.querySelectorAll(".action-btn");
+    const typeCards = document.querySelectorAll("#types .card");
+    const typeContainer = document.querySelector("#types");
 
-        const typeContainer = document.querySelector("#types");
+    const actionButtons = document.querySelectorAll(".action-btn");
+    const actionContainer = document.querySelector("#actions");
 
-typeCards.forEach(card => {
-    card.addEventListener("click", () => {
-        state.type = card.innerText.trim();
+    const fromInput = document.querySelector("#from-value");
+    const toInput = document.querySelector("#to-value");
 
-        setActive(typeContainer, card, ".card");
+    // -----------------------------
+    // UC15: Handle Type Card Click
+    // -----------------------------
+    typeCards.forEach(card => {
+        card.addEventListener("click", async () => {
 
-        loadUnits(state.type);
+            // 1. Update state
+            state.type = card.innerText.trim();
+
+            // 2. Set active card (UC11)
+            setActive(typeContainer, card, ".card");
+
+            // 3. Clear input values
+            if (fromInput) fromInput.value = "";
+            if (toInput) toInput.value = "";
+
+            // 4. Clear result panel (UC12)
+            showResult(null, "");
+
+            // 5. Reload units for selected type (UC3 + UC10)
+            try {
+                await loadUnits(state.type);
+            } catch (error) {
+                showError("Unable to load units for selected type");
+            }
+
+            // 6. Reset unit selections in state
+            state.fromUnit = "";
+            state.toUnit = "";
+        });
     });
-});
 
-        const actionContainer = document.querySelector("#actions");
-
-actionButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        state.action = btn.innerText.trim();
-
-        setActive(actionContainer, btn, ".action-btn");
-
-        // Show operators only for Arithmetic
-        toggleOperators(state.action === "Arithmetic");
+    // -----------------------------
+    // Existing Action Button Logic (UC16 later)
+    // -----------------------------
+    actionButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            state.action = btn.innerText.trim();
+            setActive(actionContainer, btn, ".action-btn");
+            toggleOperators(state.action === "Arithmetic");
+            showResult(null, "");
+        });
     });
-});
-    }
+}
 
     function setDefaultActive() {
         const firstCard = document.querySelector("#types .card");
