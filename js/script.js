@@ -28,17 +28,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         const typeCards = document.querySelectorAll("#types .card");
         const actionButtons = document.querySelectorAll(".action-btn");
 
-        typeCards.forEach(card => {
-            card.addEventListener("click", () => {
-                state.type = card.innerText.trim();
-            });
-        });
+        const typeContainer = document.querySelector("#types");
 
-        actionButtons.forEach(btn => {
-            btn.addEventListener("click", () => {
-                state.action = btn.innerText.trim();
-            });
-        });
+typeCards.forEach(card => {
+    card.addEventListener("click", () => {
+        state.type = card.innerText.trim();
+
+        setActive(typeContainer, card, ".card");
+
+        loadUnits(state.type);
+    });
+});
+
+        const actionContainer = document.querySelector("#actions");
+
+actionButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        state.action = btn.innerText.trim();
+
+        setActive(actionContainer, btn, ".action-btn");
+
+        // Show operators only for Arithmetic
+        toggleOperators(state.action === "Arithmetic");
+    });
+});
     }
 
     function setDefaultActive() {
@@ -296,5 +309,20 @@ function populateDropdown(selectEl, units) {
         option.textContent = `${unit.label} (${unit.symbol})`;
         selectEl.appendChild(option);
     });
+}
+// UC11: Set active button (type card / action button / operator)
+function setActive(parentEl, clickedEl, childSelector) {
+
+    // Safety check
+    if (!parentEl || !clickedEl) {
+        return;
+    }
+
+    // Remove active class from all siblings
+    const buttons = parentEl.querySelectorAll(childSelector);
+    buttons.forEach(btn => btn.classList.remove("active"));
+
+    // Add active class to clicked button
+    clickedEl.classList.add("active");
 }
 });
