@@ -94,44 +94,25 @@ actionButtons.forEach(btn => {
     }
 }
 
-    // UC6: Load history records (newest first)
+// UC6: Load history records
 async function loadHistory() {
-    const historyList = document.querySelector("#history-list");
-
-    if (!historyList) return;
-
     try {
         const res = await fetch(
             "http://localhost:3000/history?_sort=timestamp&_order=desc"
         );
 
         if (!res.ok) {
-            throw new Error(`HTTP Error: ${res.status}`);
+            throw new Error("Failed to load history");
         }
 
         const records = await res.json();
 
-        // Clear old history
-        historyList.innerHTML = "";
-
-        // Empty state
-        if (!records.length) {
-            const li = document.createElement("li");
-            li.textContent = "No history yet.";
-            historyList.appendChild(li);
-            return;
-        }
-
-        // Render history items
-        records.forEach(record => {
-            const li = document.createElement("li");
-            li.textContent = `${record.expression} = ${record.result}`;
-            historyList.appendChild(li);
-        });
+        // UC14 handles UI rendering
+        renderHistory(records);
 
     } catch (error) {
-        console.error("Failed to load history:", error);
-        historyList.innerHTML = "<li>No history yet.</li>";
+        console.error("History load failed:", error);
+        renderHistory([]); // show empty state safely
     }
 }
 
@@ -365,5 +346,38 @@ function toggleOperators(show) {
     }
 
     operatorRow.style.display = show ? "flex" : "none";
+}
+// UC14: Render history list
+function renderHistory(records) {
+    const list = document.querySelector("#history-list");
+
+    if (!list) {
+        console.warn("History list element not found");
+        return;
+    }
+
+    // Clear existing list
+    list.innerHTML = "";
+
+    // Handle empty or undefined history
+    if (!records || records.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "No history yet.";
+        list.appendChild(li);
+        return;
+    }
+
+    // Render each history record
+    records.forEach(record => {
+        const li = document.createElement("li");
+
+        const time = record.timestamp
+            ? new Date(record.timestamp).toLocaleString()
+            : "";
+
+        li.textContent = `${record.expression} = ${record.result} ${time && `(${time})`}`;
+
+        list.appendChild(li);
+    });
 }
 });
