@@ -69,15 +69,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     // -----------------------------
     // Existing Action Button Logic (UC16 later)
     // -----------------------------
-    actionButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            state.action = btn.innerText.trim();
-            setActive(actionContainer, btn, ".action-btn");
-            toggleOperators(state.action === "Arithmetic");
-            showResult(null, "");
-        });
+    
+
+actionButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        // 1. Update state
+        state.action = btn.innerText.trim();
+
+        // 2. Set active action tab (UC11)
+        setActive(actionContainer, btn, ".action-btn");
+
+        // 3. Toggle operator row (UC13)
+        toggleOperators(state.action === "Arithmetic");
+
+        // 4. Clear result panel (UC12)
+        showResult(null, "");
     });
-}
+});
+
 
     function setDefaultActive() {
         const firstCard = document.querySelector("#types .card");
