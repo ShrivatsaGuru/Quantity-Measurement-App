@@ -125,5 +125,28 @@ async function getConversion(from, to) {
         throw error; // let caller handle UI message
     }
 }
+// UC5: Save calculation record to history
+async function saveHistory(record) {
+    try {
+        const res = await fetch("http://localhost:3000/history", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(record)
+        });
+
+        if (!res.ok) {
+            throw new Error(`HTTP Error: ${res.status}`);
+        }
+
+        return await res.json(); // json-server returns saved object with id
+    } catch (error) {
+        console.error("Failed to save history:", error);
+        // UC5 rule: do NOT block the user
+        return null;
+    }
+}
+
 
 });
