@@ -213,5 +213,22 @@ function applyConversion(value, conversion) {
 
     throw new Error("Unsupported conversion type");
 }
+// UC8: Compare two measurement values
+function compareValues(v1, u1, v2, u2, base1, base2) {
 
+    // Validate inputs
+    if (isNaN(base1) || isNaN(base2)) {
+        return "Invalid values — cannot compare";
+    }
+
+    if (base1 > base2) {
+        return `${v1} ${u1} is GREATER than ${v2} ${u2}`;
+    }
+
+    if (base1 < base2) {
+        return `${v1} ${u1} is LESS than ${v2} ${u2}`;
+    }
+
+    return `${v1} ${u1} is EQUAL to ${v2} ${u2}`;
+}
 });
