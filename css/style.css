@@ -1,56 +1,168 @@
+:root {
+  --blue: #4f6ef7;
+  --light: #f7f9fc;
+  --card: #ffffff;
+  --border: #e5e9f2;
+  --text: #1f2937;
+  --muted: #6b7280;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  display: flex;
-  justify-content: center;
+  margin: 0;
+  background: var(--light);
+}
+
+/* HEADER */
+.top-bar {
+  background: var(--blue);
+  color: white;
+  padding: 18px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* CONTAINER */
+.container {
+  max-width: 900px;
+  margin: 30px auto;
   padding: 20px;
 }
 
-.app {
-  background: white;
-  padding: 20px;
-  width: 400px;
-  border-radius: 8px;
-}
-
-.row {
-  display: flex;
-  gap: 8px;
+/* SECTION LABEL */
+.section-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
   margin-bottom: 10px;
 }
 
-.card, button {
-  flex: 1;
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 6px;
-  border: none;
-  background: #e5e7eb;
+/* TYPE CARDS */
+.type-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
 }
 
-.active {
-  background: #2563eb;
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+
+.card .icon {
+  font-size: 26px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.card.active {
+  border-color: #4fd1c5;
+  background: #ecfeff;
+}
+
+/* ACTION TABS */
+.action-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 15px 0 25px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: white;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.action-btn.active {
+  background: var(--blue);
   color: white;
 }
 
-.inputs {
+/* INPUT CARDS */
+.input-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 20px;
 }
 
-input, select {
+.input-card {
+  background: var(--card);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.input-card label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.input-card input {
+  width: 100%;
+  font-size: 22px;
+  border: none;
+  outline: none;
+  margin: 8px 0;
+}
+
+.input-card select {
+  width: 100%;
   padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: white;
 }
 
+/* OPERATORS */
 .operators {
   display: none;
+  margin: 25px 0;
+  gap: 10px;
 }
 
-.result {
-  margin: 15px 0;
-  font-size: 20px;
-  font-weight: bold;
+.operator-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #e5e7eb;
+  cursor: pointer;
+}
+
+.operator-btn.active {
+  background: var(--blue);
+  color: white;
+}
+
+/* RESULT */
+.result-box {
+  margin: 25px 0;
+  padding: 18px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  background: white;
+  border-radius: 12px;
+}
+
+/* HISTORY */
+.history h3 {
+  margin-bottom: 10px;
 }
 
 #history-list {
@@ -59,7 +171,23 @@ input, select {
 }
 
 #history-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
-  border-bottom: 1px solid #ddd;
-  padding: 4px 0;
+}
+/* ✅ FIX DROPDOWN CLICK ISSUE */
+select {
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+}
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .type-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .input-cards {
+    grid-template-columns: 1fr;
+  }
 }

@@ -99,14 +99,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       // ✅ SAVE HISTORY ONLY IF VALID
-      if (expression && result !== null) {
-        await saveHistory({
-          expression,
-          result,
-          timestamp: new Date().toISOString()
-        });
-        loadHistory();
-      }
+      // ✅ Save history ONLY if calculation is valid
+if (expression && result !== null && result !== undefined) {
+  await saveHistory({
+    type: state.type,
+    action: state.action,
+    expression,
+    result,
+    timestamp: new Date().toISOString()
+  });
+  loadHistory();
+}
 
     } catch (e) {
       showResult("Error", "");
@@ -118,35 +121,69 @@ document.addEventListener("DOMContentLoaded", async () => {
      API LAYER
   ================================ */
 
-  async function getConversion(from, to) {
-    if (from === to) return { factor: 1, formula: null };
+async function getConversion(from, to) {
 
-    const res = await fetch(`${BASE}/conversions?from=${from}&to=${to}`);
-    const data = await res.json();
-
-    if (!data.length) {
-      throw new Error("Conversion not available");
-    }
-    return data[0];
+  // Same unit → no conversion needed
+  if (from === to) {
+    return { factor: 1, formula: null };
   }
+
+  // Try direct conversion
+  const res = await fetch(
+    `http://localhost:3000/conversions?from=${from}&to=${to}`
+  );
+  const data = await res.json();
+
+  if (data.length) {
+    return data[0]; // ✅ direct conversion found
+  }
+
+  // 🔁 Try reverse conversion (factor-based only)
+  const reverseRes = await fetch(
+    `http://localhost:3000/conversions?from=${to}&to=${from}`
+  );
+  const reverseData = await reverseRes.json();
+
+  if (reverseData.length && reverseData[0].factor !== null) {
+    return {
+      from,
+      to,
+      factor: 1 / reverseData[0].factor,
+      formula: null
+    };
+  }
+
+  // ❌ No conversion possible
+  throw new Error(`Conversion not available for ${from} → ${to}`);
+}
 
   async function saveHistory(record) {
-    await fetch(`${BASE}/history`, {
+  try {
+    await fetch("http://localhost:3000/history", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(record)
     });
+  } catch (err) {
+    console.error("History save failed", err);
   }
+}
 
-  async function loadHistory() {
-    try {
-      const res = await fetch(`${BASE}/history?_sort=timestamp&_order=desc`);
-      const history = await res.json();
-      renderHistory(history);
-    } catch {
-      renderHistory([]);
-    }
+ async function loadHistory() {
+  try {
+    const res = await fetch(
+      "http://localhost:3000/history?_sort=timestamp&_order=desc"
+    );
+    const records = await res.json();
+    renderHistory(records);
+  } catch (err) {
+    console.error("History load failed", err);
+    renderHistory([]);
   }
+}
+
 
   /* ===============================
      PURE LOGIC (UC7–UC9)
@@ -200,10 +237,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     qs("#result-unit").innerText = u;
   }
 
-  function renderHistory(h) {
-    qs("#history-list").innerHTML = h.length
-      ? h.map(x => `<li>${x.expression} = ${x.result}</li>`).join("")
-      : "<li>No history yet</li>";
+  function renderHistory(records) {
+  const list = document.querySelector("#history-list");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!records || records.length === 0) {
+    list.innerHTML = "<li>No history yet.</li>";
+    return;
   }
+
+  records.forEach(r => {
+    const li = document.createElement("li");
+    li.textContent = `${r.expression} = ${r.result}`;
+    list.appendChild(li);
+  });
+}
 
 });

@@ -1,55 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Quantity Measurement</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ✅ CORRECT CSS LINK -->
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
-<div class="app">
+  <!-- HEADER -->
+  <header class="top-bar">
+    <h1>Welcome To Quantity Measurement</h1>
+  </header>
 
-  <h1>Quantity Measurement</h1>
+  <main class="container">
 
-  <div id="types" class="row">
-    <div class="card active">Length</div>
-    <div class="card">Weight</div>
-    <div class="card">Temperature</div>
-    <div class="card">Volume</div>
-  </div>
+    <p class="section-label">CHOOSE TYPE</p>
+    <div id="types" class="type-cards">
+      <div class="card active"><span>📏</span>Length</div>
+      <div class="card"><span>⚖️</span>Weight</div>
+      <div class="card"><span>🌡️</span>Temperature</div>
+      <div class="card"><span>🧪</span>Volume</div>
+    </div>
 
-  <div id="actions" class="row">
-    <button class="action-btn active">Conversion</button>
-    <button class="action-btn">Comparison</button>
-    <button class="action-btn">Arithmetic</button>
-  </div>
+    <p class="section-label">CHOOSE ACTION</p>
+    <div id="actions" class="action-tabs">
+      <button class="action-btn active">Comparison</button>
+      <button class="action-btn">Conversion</button>
+      <button class="action-btn">Arithmetic</button>
+    </div>
 
-  <div class="inputs">
-    <input id="from-value" type="number" placeholder="From value">
-    <select id="from-unit"></select>
+    <div class="input-cards">
+      <div class="input-card">
+        <label>FROM</label>
+        <input id="from-value" type="number" value="1">
+        <select id="from-unit"></select>
+      </div>
 
-    <input id="to-value" type="number" placeholder="To value">
-    <select id="to-unit"></select>
-  </div>
+      <div class="input-card">
+        <label>TO</label>
+        <input id="to-value" type="number" value="1000">
+        <select id="to-unit"></select>
+      </div>
+    </div>
 
-  <div id="operators" class="row operators">
-    <button class="operator-btn active">+</button>
-    <button class="operator-btn">-</button>
-    <button class="operator-btn">*</button>
-    <button class="operator-btn">/</button>
-  </div>
+    <div id="operators" class="operators">
+      <button class="operator-btn active">+</button>
+      <button class="operator-btn">-</button>
+      <button class="operator-btn">*</button>
+      <button class="operator-btn">/</button>
+    </div>
 
-  <div class="result">
-    <span id="result-value">—</span>
-    <span id="result-unit"></span>
-  </div>
+    <div class="result-box">
+      <span id="result-value">—</span>
+      <span id="result-unit"></span>
+    </div>
 
-  <h3>History</h3>
-  <ul id="history-list"></ul>
+    <section class="history">
+      <h3>History</h3>
+      <ul id="history-list"></ul>
+    </section>
 
-</div>
+  </main>
 
-<script src="../js/script.js"></script>
+  <!-- ✅ CORRECT JS LINK -->
+  <script src="../js/script.js"></script>
 </body>
 </html>
