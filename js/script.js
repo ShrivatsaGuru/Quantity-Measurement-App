@@ -1,6 +1,6 @@
-document.addEventListener("DOMContentLoaded", async () => {
+const BASE = "http://localhost:3000";
 
-  const BASE = "http://localhost:3000";
+document.addEventListener("DOMContentLoaded", () => {
 
   const state = {
     type: "Length",
@@ -8,251 +8,191 @@ document.addEventListener("DOMContentLoaded", async () => {
     operator: "+"
   };
 
-  const qs = s => document.querySelector(s);
-
-  attachEvents();
-  toggleOperators(false);
-  await loadUnits("Length");
+  // Initial load
+  loadUnits("Length");
   loadHistory();
 
-  /* ===============================
-     EVENT BINDINGS
-  ================================ */
+  /* =========================
+     TYPE SELECTION
+  ========================= */
+  document.querySelectorAll(".card").forEach(card => {
+    card.addEventListener("click", async () => {
+      document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
 
-  function attachEvents() {
+      state.type = card.dataset.type;
 
-    document.querySelectorAll("#types .card").forEach(card => {
-      card.onclick = async () => {
-        state.type = card.innerText;
-        setActive("#types .card", card);
-        qs("#from-value").value = "";
-        qs("#to-value").value = "";
-        showResult("—", "");
-        await loadUnits(state.type);
-      };
+      document.getElementById("from-value").value = "";
+      document.getElementById("to-value").value = "";
+
+      showResult("—", "");
+
+      await loadUnits(state.type);
     });
+  });
 
-    document.querySelectorAll(".action-btn").forEach(btn => {
-      btn.onclick = () => {
-        state.action = btn.innerText;
-        setActive(".action-btn", btn);
-        toggleOperators(state.action === "Arithmetic");
-        showResult("—", "");
-      };
+  /* =========================
+     ACTION SELECTION
+  ========================= */
+  document.querySelectorAll(".action-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".action-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      state.action = btn.innerText;
+
+      document.getElementById("operators").style.display =
+        state.action === "Arithmetic" ? "flex" : "none";
+
+      showResult("—", "");
     });
+  });
 
-    document.querySelectorAll(".operator-btn").forEach(btn => {
-      btn.onclick = () => {
-        state.operator = btn.innerText;
-        setActive(".operator-btn", btn);
-        calculate();
-      };
+  /* =========================
+     OPERATOR SELECTION
+  ========================= */
+  document.querySelectorAll(".operator-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".operator-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      state.operator = btn.innerText;
+      calculate();
     });
+  });
 
-    ["#from-value","#to-value","#from-unit","#to-unit"].forEach(id => {
-      qs(id).addEventListener("change", calculate);
+  /* =========================
+     INPUT EVENTS
+  ========================= */
+  ["from-value", "to-value", "from-unit", "to-unit"].forEach(id => {
+    document.getElementById(id).addEventListener("input", calculate);
+  });
+
+  /* =========================
+     LOAD UNITS
+  ========================= */
+  async function loadUnits(type) {
+    const res = await fetch(`${BASE}/units?type=${type}`);
+    const units = await res.json();
+
+    populateSelect("from-unit", units);
+    populateSelect("to-unit", units);
+  }
+
+  function populateSelect(id, units) {
+    const select = document.getElementById(id);
+    select.innerHTML = `<option disabled selected>Select unit</option>`;
+
+    units.forEach(u => {
+      const option = document.createElement("option");
+      option.value = u.symbol;
+      option.textContent = u.label;
+      select.appendChild(option);
     });
   }
 
-  /* ===============================
-     CORE CALCULATION (UC17)
-  ================================ */
-
+  /* =========================
+     CALCULATION (UC17)
+  ========================= */
   async function calculate() {
+    const fromValue = Number(document.getElementById("from-value").value);
+    const toValue = Number(document.getElementById("to-value").value);
+    const fromUnit = document.getElementById("from-unit").value;
+    const toUnit = document.getElementById("to-unit").value;
 
-    const fv = Number(qs("#from-value").value);
-    const tv = Number(qs("#to-value").value);
-    const fu = qs("#from-unit").value;
-    const tu = qs("#to-unit").value;
-
-    if (!fu || !tu || isNaN(fv)) return;
+    if (!fromUnit || !toUnit || isNaN(fromValue)) return;
 
     let result = null;
     let expression = "";
 
     try {
-
-      // ✅ CONVERSION
       if (state.action === "Conversion") {
-        const conv = await getConversion(fu, tu);
-        result = applyConversion(fv, conv);
-        expression = `${fv} ${fu} → ${tu}`;
-        showResult(result, tu);
+        const conv = await getConversion(fromUnit, toUnit);
+        result = applyConversion(fromValue, conv);
+        expression = `${fromValue} ${fromUnit} → ${toUnit}`;
+        showResult(result, toUnit);
       }
 
-      // ✅ COMPARISON
-      else if (state.action === "Comparison" && !isNaN(tv)) {
-        const conv = await getConversion(tu, fu);
-        const base2 = applyConversion(tv, conv);
-        result = compare(fv, fu, tv, tu, fv, base2);
-        expression = `${fv} ${fu} ? ${tv} ${tu}`;
-        showResult(result, "");
+      if (expression) {
+        await saveHistory(expression, result);
+        loadHistory();
       }
-
-      // ✅ ARITHMETIC
-      else if (state.action === "Arithmetic" && !isNaN(tv)) {
-        const conv = await getConversion(tu, fu);
-        const norm = applyConversion(tv, conv);
-        result = arithmetic(fv, norm, state.operator);
-        expression = `${fv} ${fu} ${state.operator} ${tv} ${tu}`;
-        showResult(result, fu);
-      }
-
-      // ✅ SAVE HISTORY ONLY IF VALID
-      // ✅ Save history ONLY if calculation is valid
-if (expression && result !== null && result !== undefined) {
-  await saveHistory({
-    type: state.type,
-    action: state.action,
-    expression,
-    result,
-    timestamp: new Date().toISOString()
-  });
-  loadHistory();
-}
-
-    } catch (e) {
+    } catch (err) {
       showResult("Error", "");
-      console.error(e.message);
+      console.error(err.message);
     }
   }
 
-  /* ===============================
-     API LAYER
-  ================================ */
+  /* =========================
+     CONVERSION LOGIC
+  ========================= */
+  async function getConversion(from, to) {
+    if (from === to) {
+      return { factor: 1, formula: null };
+    }
 
-async function getConversion(from, to) {
+    // Direct conversion
+    let res = await fetch(`${BASE}/conversions?from=${from}&to=${to}`);
+    let data = await res.json();
+    if (data.length) return data[0];
 
-  // Same unit → no conversion needed
-  if (from === to) {
-    return { factor: 1, formula: null };
+    // Reverse conversion
+    res = await fetch(`${BASE}/conversions?from=${to}&to=${from}`);
+    data = await res.json();
+    if (data.length && data[0].factor !== null) {
+      return { factor: 1 / data[0].factor, formula: null };
+    }
+
+    throw new Error("Conversion not available");
   }
 
-  // Try direct conversion
-  const res = await fetch(
-    `http://localhost:3000/conversions?from=${from}&to=${to}`
-  );
-  const data = await res.json();
-
-  if (data.length) {
-    return data[0]; // ✅ direct conversion found
+  function applyConversion(value, conv) {
+    if (conv.factor !== null) {
+      return +(value * conv.factor).toFixed(6);
+    }
+    return +eval(conv.formula.replace("x", value)).toFixed(6);
   }
 
-  // 🔁 Try reverse conversion (factor-based only)
-  const reverseRes = await fetch(
-    `http://localhost:3000/conversions?from=${to}&to=${from}`
-  );
-  const reverseData = await reverseRes.json();
-
-  if (reverseData.length && reverseData[0].factor !== null) {
-    return {
-      from,
-      to,
-      factor: 1 / reverseData[0].factor,
-      formula: null
-    };
-  }
-
-  // ❌ No conversion possible
-  throw new Error(`Conversion not available for ${from} → ${to}`);
-}
-
-  async function saveHistory(record) {
-  try {
-    await fetch("http://localhost:3000/history", {
+  /* =========================
+     HISTORY
+  ========================= */
+  async function saveHistory(expression, result) {
+    await fetch(`${BASE}/history`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(record)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        expression,
+        result,
+        timestamp: new Date().toISOString()
+      })
     });
-  } catch (err) {
-    console.error("History save failed", err);
-  }
-}
-
- async function loadHistory() {
-  try {
-    const res = await fetch(
-      "http://localhost:3000/history?_sort=timestamp&_order=desc"
-    );
-    const records = await res.json();
-    renderHistory(records);
-  } catch (err) {
-    console.error("History load failed", err);
-    renderHistory([]);
-  }
-}
-
-
-  /* ===============================
-     PURE LOGIC (UC7–UC9)
-  ================================ */
-
-  function applyConversion(v, c) {
-    if (!c) throw new Error("Invalid conversion");
-    if (c.factor !== null) return +(v * c.factor).toFixed(6);
-    return +eval(c.formula.replace("x", v)).toFixed(6);
   }
 
-  function compare(v1,u1,v2,u2,b1,b2) {
-    if (b1 > b2) return `${v1} ${u1} is GREATER than ${v2} ${u2}`;
-    if (b1 < b2) return `${v1} ${u1} is LESS than ${v2} ${u2}`;
-    return `${v1} ${u1} is EQUAL to ${v2} ${u2}`;
+  async function loadHistory() {
+    const res = await fetch(`${BASE}/history?_sort=timestamp&_order=desc`);
+    const history = await res.json();
+
+    const list = document.getElementById("history-list");
+    list.innerHTML = "";
+
+    if (!history.length) {
+      list.innerHTML = "<li>No history yet.</li>";
+      return;
+    }
+
+    history.forEach(h => {
+      const li = document.createElement("li");
+      li.textContent = `${h.expression} = ${h.result}`;
+      list.appendChild(li);
+    });
   }
 
-  function arithmetic(a,b,o) {
-    if (o === "/" && b === 0) throw new Error("Divide by zero");
-    return +eval(`${a}${o}${b}`).toFixed(6);
+  /* =========================
+     RESULT UI
+  ========================= */
+  function showResult(value, unit) {
+    document.getElementById("result-value").innerText = value;
+    document.getElementById("result-unit").innerText = unit;
   }
-
-  /* ===============================
-     UI HELPERS
-  ================================ */
-
-  async function loadUnits(type) {
-    const res = await fetch(`${BASE}/units?type=${type}`);
-    const units = await res.json();
-    populate("#from-unit", units);
-    populate("#to-unit", units);
-  }
-
-  function populate(sel, units) {
-    qs(sel).innerHTML =
-      `<option disabled selected>-- Select Unit --</option>` +
-      units.map(u => `<option value="${u.symbol}">${u.label}</option>`).join("");
-  }
-
-  function setActive(selector, el) {
-    document.querySelectorAll(selector).forEach(x => x.classList.remove("active"));
-    el.classList.add("active");
-  }
-
-  function toggleOperators(show) {
-    qs("#operators").style.display = show ? "flex" : "none";
-  }
-
-  function showResult(v,u) {
-    qs("#result-value").innerText = v;
-    qs("#result-unit").innerText = u;
-  }
-
-  function renderHistory(records) {
-  const list = document.querySelector("#history-list");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  if (!records || records.length === 0) {
-    list.innerHTML = "<li>No history yet.</li>";
-    return;
-  }
-
-  records.forEach(r => {
-    const li = document.createElement("li");
-    li.textContent = `${r.expression} = ${r.result}`;
-    list.appendChild(li);
-  });
-}
 
 });
